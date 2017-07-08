@@ -20,21 +20,9 @@ def rotate(points, rotation_type, rotation, point=None):
     """
     points = np.asarray(points)
 
-    if points.ndim == 1:
-        points = np.atleast_2d(points)
+    points = np.atleast_2d(points)
 
-    rotation_type = rotation_type.upper()
-    if rotation_type == 'DCM':
-        R = rotation
-    elif rotation_type == 'EV':
-        R = EV2DCM(rotation[:3], rotation[3], point=point)
-    elif rotation_type == 'Q':
-        R = Q2DCM(rotation)
-    elif rotation_type.startswith('EA'):
-        R = EA2DCM(rotation[0], rotation[1], rotation[2], axes='s{}'.format(rotation_type[2:].lower()))
-    else:
-        raise Exception('Rotation type unknown: {}'.format(rotation_type))
-
+    R = rotationOperator(rotation_type, "DCM", rotation, point=point)
 
     # Handle homogeneous coordinates
     if (points.shape[1] + 1) == R.shape[0]:
@@ -46,6 +34,50 @@ def rotate(points, rotation_type, rotation, point=None):
         result = points.dot(R)
 
     return np.squeeze(result)
+
+
+def rotationOperator(source_type, target_type, rotation, point=None):
+    """Convert a rotation type to another one.
+
+    To Do: pass through axes.
+    """
+    source_type = source_type.upper()
+    target_type = target_type.upper()
+
+    if source_type == target_type:
+        R = rotation
+    elif target_type == "DCM":
+        if source_type == 'EV':
+            R = EV2DCM(rotation[:3], rotation[3], point=point)
+        elif source_type == 'Q':
+            R = Q2DCM(rotation)
+        elif source_type.startswith('EA'):
+            R = EA2DCM(rotation[0], rotation[1], rotation[2], axes='s{}'.format(source_type[2:].lower()))
+    elif target_type == 'Q':
+        if source_type == 'EV':
+            R = EV2Q(rotation[:3], rotation[3], point=point)
+        elif source_type == 'DCM':
+            R = DCM2Q(rotation)
+        elif source_type.startswith('EA'):
+            R = EA2Q(rotation[0], rotation[1], rotation[2], axes='s{}'.format(source_type[2:].lower()))
+    elif target_type == 'EV':
+        if source_type == 'Q':
+            raise NotImplemented()
+        elif source_type == 'DCM':
+            R = DCM2EV(rotation)
+        elif source_type.startswith('EA'):
+            raise NotImplemented()
+    elif target_type.startswith('EA'):
+        if source_type == 'EV':
+            raise NotImplemented()
+        elif source_type == 'DCM':
+            R = DCM2EA(rotation)
+        elif source_type == 'Q':
+            raise NotImplemented()
+    else:
+        raise Exception('Rotation type unknown: {}'.format(source_type))
+
+    return R
 
 
 ## Generate pure-axis rotation matrices
@@ -71,7 +103,7 @@ def roty(theta):
     """
     Produces a counter-clockwise 3D rotation matrix around axis Y with angle `theta` in radians.
     """
-    return np.array([[np.cos(theta), 0, - np.sin(theta)]
+    return np.array([[np.cos(theta), 0, -np.sin(theta)]
                      [0, 1, 0],
                      [np.sin(theta), 0, np.cos(theta)]], dtype='float64')
 
