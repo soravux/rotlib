@@ -103,7 +103,7 @@ def roty(theta):
     """
     Produces a counter-clockwise 3D rotation matrix around axis Y with angle `theta` in radians.
     """
-    return np.array([[np.cos(theta), 0, -np.sin(theta)]
+    return np.array([[np.cos(theta), 0, -np.sin(theta)],
                      [0, 1, 0],
                      [np.sin(theta), 0, np.cos(theta)]], dtype='float64')
 
