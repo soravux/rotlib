@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='rotlib',
-      version='0.9',
+      version='0.91',
       description='Rotation Library',
       author='Yannick Hold-Geoffroy',
       author_email='yannickhold@gmail.com',

@@ -3,6 +3,9 @@ import math
 
 from .quaternion import *
 
+__version__ = '0.91'
+__revision__ = '1'
+
 
 def rotate(points, rotation_type, rotation, point=None):
     """
